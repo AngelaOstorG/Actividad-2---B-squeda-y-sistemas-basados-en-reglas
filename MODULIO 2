@@ -1,0 +1,52 @@
+import math
+import heapq
+
+# Heurística: Distancia euclidiana en línea recta
+def heuristica(nodoActual, nodoDestino):
+    x1, y1 = estaciones[nodoActual]
+    x2, y2 = estaciones[nodoDestino]
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+# Algoritmo de Búsqueda A*
+def buscarRuta(origen, destino, trafico=1.0):
+    if origen not in estaciones or destino not in estaciones:
+        return None, float('inf')
+
+    cola = [(0 + heuristica(origen, destino), 0, origen, [origen])]
+    visitados = set()
+
+    while cola:
+        f, g, actual, camino = heapq.heappop(cola)
+
+        if actual == destino:
+            return camino, g
+
+        if actual in visitados:
+            continue
+        visitados.add(actual)
+
+        for vecino, tiempoBase in rutas.get(actual, []):
+            if vecino not in visitados:
+                # Función creada en el módulo 1
+                tiempoTramo = aplicarReglas(actual, vecino, tiempoBase, trafico=trafico)
+                nuevoG = g + tiempoTramo
+                nuevoF = nuevoG + heuristica(vecino, destino)
+                heapq.heappush(cola, (nuevoF, nuevoG, vecino, camino + [vecino]))
+
+    return None, float('inf')
+
+# ====================
+# PRUEBAS MÓDULO 2
+# ====================
+print("=== SISTEMA INTELIGENTE DE NAVEGACIÓN ===")
+origenUser = input("Ingrese estación de origen (A, B, C, D, E): ").strip().upper()
+destinoUser = input("Ingrese estación de destino (A, B, C, D, E): ").strip().upper()
+
+caminoOptimo, tiempoCalculado = buscarRuta(origenUser, destinoUser, trafico=1.2)
+
+print("\n--- RESULTADO OBTENIDO CON A* ---")
+if caminoOptimo:
+    print(f"Ruta óptima calculada: {' -> '.join(caminoOptimo)}")
+    print(f"Tiempo estimado total: {tiempoCalculado:.2f} minutos")
+else:
+    print("Estación no válida.")
